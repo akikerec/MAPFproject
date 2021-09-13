@@ -1,19 +1,19 @@
 dir(1,0). dir(-1,0). dir(0,1). dir(0,-1). dir(0,0).
 
-hway(H,X,Y) :- init(object(highway,H),value(_,(X,Y))).
+node(N,X,Y) :- init(object(node, N),value(_,(X,Y))).
 goal(X,Y)   :- init(object(shelf,_), value(at,(X,Y))).
 robot(R) :- init(object(robot,R), _).
-init(object(robot, R), value(dl, D)) :- init(object(robot,R), _), deadline(D).
+%init(object(robot, R), value(dl, D)) :- init(object(robot,R), _), deadline(D).
 
 %define edges
-edge(X,Y, X+Dx,Y+Dy) :- hway(H,X,Y), hway(HH,X+Dx,Y+Dy), dir(Dx,Dy).
+edge(X,Y, X+Dx,Y+Dy) :- node(N,X,Y), node(NN,X+Dx,Y+Dy), dir(Dx,Dy).
 edge(X,Y,XX,YY) :- edge(XX,YY,X,Y). 
 
-path(R,X,Y,0,D) :- init(object(robot,R), value(at,(X,Y))), init(object(robot, R), value(dl, D)).
+path(R,X,Y,0,D) :- init(object(robot,R), value(at,(X,Y))), deadline(D).
 
 %exists(R,X,Y,XX,YY) :- path(R,X,Y,_,_), edge(X,Y,XX,YY).
 
-{path(R,XX,YY,S+1,D)}1 :- path(R,X,Y,S,D), edge(X,Y,XX,YY), S<D.
+{path(R,XX,YY,S+1,D)}1 :- path(R,X,Y,S,D), edge(X,Y,XX,YY), S+1<=D.
 
 %robot cannot move in different directions at the same timestep
 :- path(R,X,Y,S,_), path(R,XX,YY,S,_), (X,Y)!= (XX,YY).
@@ -37,9 +37,10 @@ finish(R,S,X,Y) :- path(R,X,Y,S,_), goal(X,Y), robot(RR), not finish(RR,_,X,Y), 
 occurs(object(robot, R), action(move,(XX-X, YY-Y)),S) :- path(R,X,Y,S,_),path(R,XX,YY,S+1,_).
 
 %#show path/5.
+
 %#show exists/5.
 %#show edge/4.
-%#show hway/3.
+%#show node/3.
 #show occurs/3.
 
 
